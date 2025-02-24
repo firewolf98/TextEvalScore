@@ -1,11 +1,12 @@
 import openai
 import numpy as np
 import json
+import os
 from scipy.stats import spearmanr, pearsonr, kendalltau
 from sklearn.metrics import cohen_kappa_score
 
 # Configurazione del modello OpenAI GPT-3
-OPENAI_API_KEY = "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"
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 openai.api_key = OPENAI_API_KEY
 
 
