@@ -1,3 +1,4 @@
+import time
 import openai
 import numpy as np
 import json
@@ -22,7 +23,7 @@ def compute_gptscore(text, aspect):
     Calcola GPTScore per un dato testo e aspetto utilizzando GPT-3.
     """
     prompt = generate_prompt(text, aspect)
-    response = openai.ChatCompletion.create(
+    response = openai.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
             {"role": "user", "content": prompt}
@@ -69,7 +70,11 @@ def main():
     dataset_path = "dstc9_data.json"
     test_texts, human_scores = load_dataset(dataset_path)
 
-    gpt_scores = [compute_gptscore(text, "coerenza") for text in test_texts]
+    gpt_scores = []
+    for text in test_texts:
+        score = compute_gptscore(text, "coerenza")
+        gpt_scores.append(score)
+        time.sleep(30)
     evaluation_results = evaluate_scores(gpt_scores, human_scores)
 
     print("GPT Scores:", gpt_scores)
