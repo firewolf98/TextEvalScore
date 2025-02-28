@@ -3,37 +3,71 @@ import openai
 import numpy as np
 import json
 import os
+import re
+from openai import OpenAI
 from scipy.stats import spearmanr, pearsonr, kendalltau
 from sklearn.metrics import cohen_kappa_score
 
 # Configurazione del modello OpenAI GPT-3
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-openai.api_key = OPENAI_API_KEY
-
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY") # $env:OPENAI_API_KEY="tuachiavequi"
+MODEL_NAME = "gpt-3.5-turbo"
 
 def generate_prompt(text, aspect):
     """
-    Crea un prompt per valutare un testo su un aspetto specifico.
+    Crea un prompt specifico per la valutazione del testo basato sulla traccia.
     """
-    return f"Valuta il seguente testo in base a {aspect}:\n{text}\nRisposta:"
+    return (
+        f"Valuta il seguente testo in base a {aspect}:\n"
+        f"{text}\n"
+        "Rispondi SOLO con un numero tra 0 e 1 che rappresenta la probabilità condizionata."
+    )
 
 
-def compute_gptscore(text, aspect):
+def extract_score(response_text):
+    """
+    Estrae il primo numero valido dalla risposta del modello.
+    """
+    match = re.search(r"\d+\.\d+", response_text)
+    if match:
+        return float(match.group(0))
+    else:
+        print(f"⚠️ Nessun numero trovato nella risposta: {response_text}")
+        return 0.0
+
+def compute_gptscore(text, aspect, max_retries=5):
     """
     Calcola GPTScore per un dato testo e aspetto utilizzando GPT-3.
     """
+    openai_client = OpenAI(api_key=OPENAI_API_KEY, base_url="https://api.gpt4-all.xyz/v1")
     prompt = generate_prompt(text, aspect)
-    response = openai.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "user", "content": prompt}
-        ],
-        max_tokens=10
-    )
-    score = float(response["choices"][0]["message"]["content"].strip())
-    return score
+    print(f"\n▶️  Elaborazione testo: {text}...")
 
+    wait_time = 5
+    for attempt in range(max_retries):
+        try:
+            time.sleep(wait_time)
+            response = openai_client.chat.completions.create(
+                model=MODEL_NAME,
+                messages=[
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=10
+            )
+            response_text = response.choices[0].message.content.strip()
+            print(f"📝 Risposta Llama-3: {response_text}")
+            score = extract_score(response_text)
+            print(f"✅ Punteggio estratto: {score}\n")
+            return score
+        except openai.RateLimitError:
+            wait_time = 2 ** attempt
+            print(f"⚠️ Rate Limit raggiunto. Attendo {wait_time} secondi prima di riprovare...")
+            time.sleep(wait_time)
+        except Exception as e:
+            print(f"❌ Errore durante la richiesta: {e}")
+            return 0.0
 
+    print("❌ Numero massimo di tentativi raggiunto. Assegno punteggio 0.0.")
+    return 0.0
 
 
 def evaluate_scores(gpt_scores, human_scores):
@@ -60,15 +94,18 @@ def load_dataset(file_path):
     with open(file_path, "r", encoding="utf-8") as file:
         data = json.load(file)
 
-    texts = [" ".join(context) for context in data["contexts"]]  # Unisce le conversazioni in un unico testo
-    human_scores = np.random.uniform(0, 1, len(texts)).tolist()  # Simula punteggi umani (se non disponibili nel dataset)
-    return texts, human_scores
+    texts = [" ".join(context) for context in data["contexts"]]
+    references = data.get("references", [])
+    human_scores = data.get("scores", [])
+    models = data.get("models", [])
+    human_scores_float = [float(score) for score in human_scores]
+    return texts, references, human_scores_float, models
 
 
 # Esegue il calcolo di GPTScore e la valutazione finale
 def main():
-    dataset_path = "dstc9_data.json"
-    test_texts, human_scores = load_dataset(dataset_path)
+    dataset_path = "prova.json"
+    test_texts, references, human_scores, models = load_dataset(dataset_path)
 
     gpt_scores = []
     for text in test_texts:
@@ -79,6 +116,8 @@ def main():
 
     print("GPT Scores:", gpt_scores)
     print("Valutazione rispetto ai giudizi umani:", evaluation_results)
+    print("Modelli associati:", models)
+    print("Riferimenti:", references)
 
 
 if __name__ == "__main__":
