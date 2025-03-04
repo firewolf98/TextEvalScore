@@ -9,8 +9,19 @@ from scipy.stats import spearmanr, pearsonr, kendalltau
 from sklearn.metrics import cohen_kappa_score
 
 # Configurazione del modello OpenAI GPT-3
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY") # $env:OPENAI_API_KEY="tuachiavequi"
+OPENAI_API_KEY = "" #os.getenv("OPENAI_API_KEY") # $env:OPENAI_API_KEY="tuachiavequi"
 MODEL_NAME = "gpt-3.5-turbo"
+current_key = 0
+keys = []
+
+def extract_keys():
+    global keys
+    global OPENAI_API_KEY
+    file_path = "keys.json"
+    with open(file_path, "r", encoding="utf-8") as file:
+        data = json.load(file)
+    keys = data.get("keys", [])
+    OPENAI_API_KEY = keys[current_key]
 
 def generate_prompt(text, aspect):
     """
@@ -38,6 +49,8 @@ def compute_gptscore(text, aspect, max_retries=5):
     """
     Calcola GPTScore per un dato testo e aspetto utilizzando GPT-3.
     """
+    global current_key
+    global OPENAI_API_KEY
     openai_client = OpenAI(api_key=OPENAI_API_KEY, base_url="https://api.gpt4-all.xyz/v1")
     prompt = generate_prompt(text, aspect)
     print(f"\n▶️  Elaborazione testo: {text}...")
@@ -62,6 +75,8 @@ def compute_gptscore(text, aspect, max_retries=5):
             wait_time = 2 ** attempt
             print(f"⚠️ Rate Limit raggiunto. Attendo {wait_time} secondi prima di riprovare...")
             time.sleep(wait_time)
+            current_key = current_key + 1
+            OPENAI_API_KEY = keys[current_key]
         except Exception as e:
             print(f"❌ Errore durante la richiesta: {e}")
             return 0.0
@@ -101,24 +116,54 @@ def load_dataset(file_path):
     human_scores_float = [float(score) for score in human_scores]
     return texts, references, human_scores_float, models
 
+# Stampa l'interfaccia grafica iniziale
+def ui_interface():
+    print("*" * 30)
+    print(" GPTScore evaluation GenText")
+    print("*" * 30)
+
+# Salva risultati su file json
+def save_results(models, human_scores, scores):
+    file_path = "results.json"
+
+    # Creiamo una lista di dizionari con chiavi fisse
+    results = [
+        {
+            "model": models[i],
+            "human_score": human_scores[i],
+            **scores  # Inserisce tutte le metriche di evaluate_scores nel dizionario
+        }
+        for i in range(len(models))
+    ]
+
+    # Scriviamo la lista su file JSON
+    with open(file_path, "w", encoding="utf-8") as file:
+        json.dump(results, file, indent=4, ensure_ascii=False)
+
 
 # Esegue il calcolo di GPTScore e la valutazione finale
 def main():
-    dataset_path = "prova.json"
+    ui_interface()
+    extract_keys()
+
+    dataset_path = "dstc9_data.json"
     test_texts, references, human_scores, models = load_dataset(dataset_path)
 
     gpt_scores = []
     for text in test_texts:
         score = compute_gptscore(text, "coerenza")
         gpt_scores.append(score)
-        time.sleep(30)
+        time.sleep(20)
     evaluation_results = evaluate_scores(gpt_scores, human_scores)
 
+    save_results(models, human_scores, evaluation_results)
+
+    """
     print("GPT Scores:", gpt_scores)
     print("Valutazione rispetto ai giudizi umani:", evaluation_results)
     print("Modelli associati:", models)
     print("Riferimenti:", references)
-
+    """
 
 if __name__ == "__main__":
     main()
