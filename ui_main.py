@@ -207,6 +207,7 @@ def start_elaboration(dataset,selected_category, selected_prompt):
     progress["maximum"] = total
 
     root.update_idletasks()
+    frame.update()
 
     def process_text(i=0):
         global file_name
