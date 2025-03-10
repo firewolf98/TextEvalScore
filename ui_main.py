@@ -1,9 +1,13 @@
+import os
 import tkinter as tk
 from PIL import Image, ImageTk
 import webbrowser
 from tkinter import ttk,filedialog
 from utils.eval_score import *
 
+
+file_name = "dstc9_data"
+result_text_area = None
 
 # Mostra il menu iniziale
 def show_menu():
@@ -74,9 +78,11 @@ def perform_new_evaluation(selected_category, selected_prompt):
 
     # Funzione per gestire la selezione del dataset
     def select_dataset():
+        global file_name
         # Finestra di dialogo per aprire un file
         file_path = filedialog.askopenfilename(title="Seleziona un file JSON",
                                                filetypes=[("JSON files", "*.json"), ("All files", "*.*")])
+        file_name = os.path.splitext(os.path.basename(file_path))[0]
         if file_path:
             try:
                 dataset = load_dataset(file_path)
@@ -87,8 +93,12 @@ def perform_new_evaluation(selected_category, selected_prompt):
         dialog.destroy()
 
     def use_default_dataset():
-        print("Hai scelto di utilizzare il dataset di default.")
-        # Logica per utilizzare il dataset di default (da implementare)
+        try:
+            dataset = load_dataset("datasets/dstc9_data.json")
+            dialog.destroy()
+            start_elaboration(dataset, selected_category, selected_prompt)
+        except Exception as e:
+            tk.messagebox.showerror("Errore", "Impossibile caricare il file JSON. Verifica il formato.")
         dialog.destroy()
 
     # Bottoni per la selezione del dataset
@@ -184,32 +194,108 @@ def select_prompt():
 
 # Metodo che gestisce la finestra di avanzamento dell'elaborazione
 def start_elaboration(dataset,selected_category, selected_prompt):
-    clear_frame()
+    scores = []
+
     show_image()
 
     # Creazione della barra di avanzamento
-    progress_label = tk.Label(frame, text="Elaborazione in corso...", font=("Arial", 12))
+    progress_label = tk.Label(frame, text="Elaborazione in corso... (0/0)", font=("Arial", 12))
     progress_label.pack(pady=10)
     progress = ttk.Progressbar(frame, length=300, mode="determinate")
     progress.pack(pady=10)
     total = len(dataset["contexts"])
     progress["maximum"] = total
 
-    for i in range(total):
-        dialog = " ".join(dataset["contexts"][i])
-        dialog = f"{dialog} Response: {dataset['responses'][i]}"
-        prompt = prepare_prompt(dialog, selected_category, selected_prompt)
-        score = start_new_evaluation(prompt)
-        print(score)
-        progress["value"] = i + 1
-        root.update_idletasks()
+    root.update_idletasks()
 
-    progress_label.config(text="Elaborazione completata!")
+    def process_text(i=0):
+        global file_name
+        """Elabora i testi uno per uno, aggiornando la GUI"""
+        if i < total:
+            dialog = " ".join(dataset["contexts"][i])
+            dialog = f"{dialog} Response: {dataset['responses'][i]}"
+            prompt = prepare_prompt(dialog, selected_category, selected_prompt)
+            score = start_new_evaluation(prompt)
+            scores.append(score)
+
+            # Aggiorna la barra di progresso
+            progress["value"] = i + 1
+            progress_label.config(text=f"Elaborazione in corso... ({i + 1}/{total})")
+            root.update_idletasks()
+
+            frame.after(10, process_text, i + 1)
+        else:
+            # Una volta completato, mostra il messaggio
+            results = calculate_corr(dataset["scores"], scores)
+            generate_results(file_name,dataset["scores"],scores,results)
+            progress_label.config(text="Elaborazione completata!")
+            view_results_button = create_rounded_button(frame, "Visualizza risultati",
+                                                        command=lambda f=file_name: show_result_details(
+                                                            os.path.join("results", f + "_results.json")))
+            back_button = create_rounded_button(frame, "Torna al menu", show_menu)
+
+    # Avvia l'elaborazione senza bloccare l'interfaccia
+    process_text()
 
 # Frame della scelta di visualizzazione dei risultati delle varie valutazioni effettuate
 def view_results():
-    # Logica per visualizzare i risultati precedenti (da implementare)
-    pass
+    clear_frame()
+    show_image()
+
+    # Messaggio di intestazione
+    label = tk.Label(frame, text="Quali risultati vuoi visualizzare?", font=("Arial", 14, "bold"), fg="#f0ebd8",
+                     bg="#1d2d44")
+    label.pack(pady=(10, 10), anchor="center")
+
+    results_dir = "results"  # Percorso della cartella dei risultati
+    if not os.path.exists(results_dir):
+        os.makedirs(results_dir)  # Crea la cartella se non esiste
+
+    files = [f for f in os.listdir(results_dir) if f.endswith(".json")]  # Filtra solo file JSON
+
+    if not files:
+        no_results_label = tk.Label(frame, text="Nessun risultato disponibile.", font=("Arial", 12), fg="#f0ebd8",
+                                    bg="#1d2d44")
+        no_results_label.pack(pady=10)
+    else:
+        for file_name in files:
+            file_frame = tk.Frame(frame, bg="#1d2d44")
+            file_frame.pack(pady=5, padx=10, fill="x")
+
+            file_label = tk.Label(file_frame, text=file_name, font=("Arial", 12), fg="#f0ebd8", bg="#1d2d44")
+            file_label.pack(side="left", padx=10)
+
+            view_button = tk.Button(file_frame, text="Visualizza Risultati", font=("Arial", 10), bg="#748cab",
+                                    fg="black",
+                                    command=lambda f=file_name: show_result_details(os.path.join(results_dir, f)))
+            view_button.pack(side="right", padx=10)
+
+    back_button = create_rounded_button(frame, "Torna al menu", show_menu)
+
+
+# Funzione per mostrare i dettagli di un file di risultati
+def show_result_details(file_path):
+    global result_text_area
+    clear_frame()  # Pulisce il frame corrente per mostrare i risultati
+
+    try:
+        with open(file_path, "r", encoding="utf-8") as file:
+            data = file.read()
+
+        # Creiamo un'area di testo per visualizzare i risultati
+        result_text_area = tk.Text(frame, wrap="word", font=("Arial", 12), bg="#f0ebd8", fg="black")
+        result_text_area.insert("1.0", data)
+        result_text_area.config(state="disabled")
+        result_text_area.pack(expand=True, fill="both", padx=10, pady=10)
+
+        # Bottone per tornare al menu principale
+        back_button = tk.Button(frame, text="Torna al menu", font=("Arial", 12), bg="#748cab", fg="black",
+                                command=show_menu)
+        back_button.pack(pady=10)
+
+    except Exception as e:
+        tk.messagebox.showerror("Errore", f"Impossibile aprire il file:\n{str(e)}")
+
 
 
 # Frame dei crediti dell'applicazione

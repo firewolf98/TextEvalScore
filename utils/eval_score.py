@@ -3,6 +3,9 @@ import time
 import random
 import openai
 from openai import OpenAI
+from scipy.stats import spearmanr, pearsonr, kendalltau
+from sklearn.metrics import cohen_kappa_score
+import numpy as np
 
 OPENAI_API_KEY = ""
 MODEL_NAME = "llama-3-70b"
@@ -97,3 +100,40 @@ def prepare_prompt(dialogue,selected_category, selected_prompt):
     prompt = data[selected_category][selected_prompt]["prompt"]
     prompt = prompt.format(History=dialogue)
     return prompt
+
+
+# Metodo per il calcolo della correlazione tra i punteggi
+def calculate_corr(human_scores,gpt_scores):
+    spearman_corr, _ = spearmanr(human_scores, gpt_scores)
+    pearson_corr, _ = pearsonr(human_scores, gpt_scores)
+    kendall_corr, _ = kendalltau(human_scores, gpt_scores)
+    kappa = cohen_kappa_score(np.round(human_scores), np.round(gpt_scores))
+    return {
+        "Spearman": float(spearman_corr),
+        "Pearson": float(pearson_corr),
+        "Kendall-Tau": float(kendall_corr),
+        "Cohen's Kappa": float(kappa)
+    }
+
+
+# Metodo che genera il file con i risultati
+def generate_results(dataset_name,human_scores, gpt_scores, performance_results):
+    file_path = f"results/{dataset_name}_results.json"
+
+    results = [
+        {
+            "id": i,
+            "human_score": human_scores[i],
+            "gpt_score": gpt_scores[i]
+        }
+        for i in range(len(human_scores))
+    ]
+
+    final_results = {
+        "performance_results": performance_results,
+        "results": results
+    }
+
+    # Scriviamo la lista su file JSON
+    with open(file_path, "w", encoding="utf-8") as file:
+        json.dump(final_results, file, indent=4, ensure_ascii=False)
