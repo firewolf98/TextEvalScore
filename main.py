@@ -2,8 +2,8 @@ import time
 import openai
 import numpy as np
 import json
-import os
 import re
+import os
 from openai import OpenAI
 from scipy.stats import spearmanr, pearsonr, kendalltau
 from sklearn.metrics import cohen_kappa_score
@@ -17,7 +17,7 @@ keys = []
 def extract_keys():
     global keys
     global OPENAI_API_KEY
-    file_path = "keys.json"
+    file_path = "utils/keys.json"
     with open(file_path, "r", encoding="utf-8") as file:
         data = json.load(file)
     keys = data.get("keys", [])
@@ -67,7 +67,7 @@ def compute_gptscore(text, aspect, max_retries=5):
                 max_tokens=10
             )
             response_text = response.choices[0].message.content.strip()
-            print(f"📝 Risposta Llama-3: {response_text}")
+            print(f"📝 Risposta {MODEL_NAME}: {response_text}")
             score = extract_score(response_text)
             print(f"✅ Punteggio estratto: {score}\n")
             return score
@@ -118,9 +118,23 @@ def load_dataset(file_path):
 
 # Stampa l'interfaccia grafica iniziale
 def ui_interface():
-    print("*" * 30)
-    print(" GPTScore evaluation GenText")
-    print("*" * 30)
+    # Messaggio di benvenuto
+    os.system('cls' if os.name == 'nt' else 'clear')
+    print("\033[1;34m" + "*" * 30 + "\033[0m")
+    print("\033[1;32m" + "     TextEvalScore     \033[0m")
+    print("\033[1;34m" + "*" * 30 + "\033[0m")
+    print("\n\033[1;33m" + "Benvenuto su TextEvalScore!" + "\033[0m")
+    print("\033[1;33m" + "Un'applicazione per valutare la qualità dei testi generati dall'IA." + "\033[0m")
+    menu()
+
+
+# Definisce il menu iniziale
+def menu():
+    print("\n\033[1;36m" + "Scegli un'opzione dal menu per iniziare:" + "\033[0m")  # Ciano
+    print("1. Valuta un testo")
+    print("2. Visualizza risultati precedenti")
+    print("3. Esci")
+
 
 # Salva risultati su file json
 def save_results(models, human_scores, scores):
@@ -144,6 +158,7 @@ def save_results(models, human_scores, scores):
 # Esegue il calcolo di GPTScore e la valutazione finale
 def main():
     ui_interface()
+    """
     extract_keys()
 
     dataset_path = "dstc9_data.json"
@@ -157,12 +172,6 @@ def main():
     evaluation_results = evaluate_scores(gpt_scores, human_scores)
 
     save_results(models, human_scores, evaluation_results)
-
-    """
-    print("GPT Scores:", gpt_scores)
-    print("Valutazione rispetto ai giudizi umani:", evaluation_results)
-    print("Modelli associati:", models)
-    print("Riferimenti:", references)
     """
 
 if __name__ == "__main__":
