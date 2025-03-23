@@ -49,7 +49,7 @@ def evaluate_text():
 
     # Bottone per effettuare una nuova valutazione
     new_evaluation_button = create_rounded_button(frame, "Effettua una nuova valutazione", select_prompt)
-    new_textToEvaluate_button = create_rounded_button(frame, "Genera del nuovo testo da valutare", perform_new_evaluation)
+    new_textToEvaluate_button = create_rounded_button(frame, "Genera del nuovo testo da valutare", dialogue_with_ia_chatbot)
     back_button = create_rounded_button(frame, "Torna al menu", show_menu)
 
 
@@ -297,6 +297,68 @@ def show_result_details(file_path):
     except Exception as e:
         tk.messagebox.showerror("Errore", f"Impossibile aprire il file:\n{str(e)}")
 
+
+def dialogue_with_ia_chatbot():
+    clear_frame()  # Pulisce il frame corrente
+
+    chat_frame = tk.Frame(frame, bg="#1d2d44")
+    chat_frame.pack(expand=True, fill="both", padx=10, pady=10)
+    scrollbar = tk.Scrollbar(chat_frame)
+    scrollbar.pack(side="right", fill="y")
+
+
+    chat_display = tk.Text(chat_frame, wrap="word", font=("Arial", 12), bg="#f0ebd8", fg="black",height=20, state="disabled")
+    chat_display.pack(expand=True, fill="both", padx=10, pady=10)
+    scrollbar.config(command=chat_display.yview)
+    entry_frame = tk.Frame(chat_frame, bg="#1d2d44")
+    entry_frame.pack(fill="x", padx=10, pady=5)
+
+    user_entry = tk.Entry(entry_frame, font=("Arial", 12), bg="#ffffff", fg="black")
+    user_entry.pack(side="left", expand=True, fill="x", padx=(0, 5), pady=5)
+
+    user_messages = []
+    ai_responses = []
+
+    def send_message():
+        """Invia il messaggio dell'utente e riceve la risposta dall'IA"""
+        user_text = user_entry.get().strip()
+        if not user_text:
+            return  # Non invia messaggi vuoti
+
+        # Mostra il messaggio dell'utente
+        chat_display.config(state="normal")
+        chat_display.insert("end", f"Tu: {user_text}\n", "user")
+        chat_display.config(state="disabled")
+        user_messages.append(user_text)
+        user_entry.delete(0, "end")
+        root.update_idletasks()
+
+        # Ottieni la risposta dall'IA (chiamando eval_score.py)
+        bot_message = get_ai_response(user_text)
+
+        # Mostra la risposta dell'IA
+        chat_display.config(state="normal")
+        chat_display.insert("end", f"IA: {bot_message}\n", "ia")
+        chat_display.config(state="disabled")
+        chat_display.see("end")
+        ai_responses.append(bot_message)
+
+    send_button = tk.Button(entry_frame, text="Invia", command=send_message, font=("Arial", 12), bg="#748cab",
+                            fg="black")
+    send_button.pack(side="right", padx=(5, 0), pady=5)
+
+    def end_chat():
+        save_new_dialog(user_messages, ai_responses)
+        show_menu()
+
+    end_button = tk.Button(entry_frame, text="Termina Chat", command=end_chat, font=("Arial", 12), bg="#ff4d4d",
+                           fg="black")
+    end_button.pack(side="right", padx=(5, 0), pady=5)
+
+    chat_display.tag_config("user", foreground="blue")
+    chat_display.tag_config("ia", foreground="green")
+
+    back_button = create_rounded_button(frame, "Torna indietro", show_menu)
 
 
 # Frame dei crediti dell'applicazione

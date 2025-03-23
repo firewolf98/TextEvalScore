@@ -1,0 +1,22 @@
+{
+    "contexts": [
+        "ciao",
+        "come stai?"
+    ],
+    "responses": [
+        "Ciao!",
+        "Ciao! Io sono un'intelligenza artificiale, quindi non ho uno stato d'animo o sentimenti come gli esseri umani. Sto funzionando correttamente e sono pronta a chattare con te! Come"
+    ],
+    "references": [
+        "NO REF",
+        "NO REF"
+    ],
+    "scores": [
+        4.37,
+        4.08
+    ],
+    "models": [
+        "chatbot1.json",
+        "chatbot1.json"
+    ]
+}

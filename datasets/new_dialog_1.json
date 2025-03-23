@@ -1,0 +1,22 @@
+{
+    "contexts": [
+        "ehy",
+        "boh"
+    ],
+    "responses": [
+        "A simple \"ehy\"! How's it going?",
+        "It seems like you're just saying \"hey\" and \"oh well\" in Italian! \"Ehy\" is a casual way to say \"hey\" in Italian, and \"boh\" is an expression that roughly translates to \"oh well\""
+    ],
+    "references": [
+        "NO REF",
+        "NO REF"
+    ],
+    "scores": [
+        0.91,
+        1.74
+    ],
+    "models": [
+        "chatbot1.json",
+        "chatbot1.json"
+    ]
+}

@@ -1,5 +1,6 @@
 import json
 import time
+import os
 import random
 import openai
 from openai import OpenAI
@@ -12,6 +13,7 @@ MODEL_NAME = "llama-3-70b"
 current_key = 0
 keys = []
 KEY_STATE_FILE = "utils/keys_state.json"
+dialogue = []
 
 # Metodo per iniziare un nuovo processo di valutazione
 def start_new_evaluation(prompt):
@@ -69,7 +71,7 @@ def compute_gptscore(model_name,prompt):
                 messages=[
                     {"role": "user", "content": prompt}
                 ],
-                max_tokens=2048
+                max_tokens=10
             )
             received = True
         except openai.RateLimitError:
@@ -137,3 +139,51 @@ def generate_results(dataset_name,human_scores, gpt_scores, performance_results)
     # Scriviamo la lista su file JSON
     with open(file_path, "w", encoding="utf-8") as file:
         json.dump(final_results, file, indent=4, ensure_ascii=False)
+
+
+def get_ai_response(user_message):
+    extract_keys()
+    openai_client = OpenAI(api_key=OPENAI_API_KEY, base_url="https://api.gpt4-all.xyz/v1")
+
+    global dialogue
+
+    # Aggiunge il messaggio dell'utente alla conversazione
+    dialogue.append({"role": "user", "content": user_message})
+
+    try:
+        # Chiamata all'API di OpenAI
+        response = openai_client.chat.completions.create(
+            model=MODEL_NAME,
+            messages=dialogue,
+            max_tokens=50
+        )
+        bot_message = response.choices[0].message.content.strip()
+    except Exception as e:
+        bot_message = f"Errore: {str(e)}"
+
+    return bot_message
+
+
+def save_new_dialog(contexts, responses,save_path="datasets/new_dialog.json"):
+    if os.path.exists(save_path):
+        base, extension = os.path.splitext(save_path)
+        counter = 1
+        new_save_path = f"{base}_{counter}{extension}"
+
+        while os.path.exists(new_save_path):
+            counter += 1
+            new_save_path = f"{base}_{counter}{extension}"
+
+        save_path = new_save_path
+
+    scores = [round(random.uniform(0, 5), 2) for _ in responses]
+    dialog_data = {
+        "contexts": contexts,
+        "responses": responses,
+        "references": ["NO REF"] * len(responses),
+        "scores": scores,
+        "models": ["chatbot1.json"] * len(responses)
+    }
+
+    with open(save_path, "w", encoding="utf-8") as file:
+        json.dump(dialog_data, file, indent=4, ensure_ascii=False)
