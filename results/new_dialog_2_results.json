@@ -1,0 +1,20 @@
+{
+    "performance_results": {
+        "Spearman": 0.9999999999999999,
+        "Pearson": 1.0,
+        "Kendall-Tau": 1.0,
+        "Cohen's Kappa": 0.0
+    },
+    "results": [
+        {
+            "id": 0,
+            "human_score": 2.54,
+            "gpt_score": -0.876289630890601
+        },
+        {
+            "id": 1,
+            "human_score": 1.46,
+            "gpt_score": -1.1754212295418494
+        }
+    ]
+}

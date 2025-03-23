@@ -1,0 +1,22 @@
+{
+    "contexts": [
+        "hola como estas",
+        "bien"
+    ],
+    "responses": [
+        "Hola! Como soy una inteligencia artificial, no tengo sentimientos o emociones como los seres humanos, por lo que no estoy realmente \"bien\" o \"mal\". Sin embargo, estoy funcionando correctamente y lista para ayudarte en",
+        "Me alegra saber que estás bien! ¿En qué puedo ayudarte hoy? ¿Quieres hablar de algo en particular o simplemente charlar un rato?"
+    ],
+    "references": [
+        "NO REF",
+        "NO REF"
+    ],
+    "scores": [
+        2.54,
+        1.46
+    ],
+    "models": [
+        "chatbot1.json",
+        "chatbot1.json"
+    ]
+}
