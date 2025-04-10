@@ -1,0 +1,37 @@
+{
+    "contexts": [
+        "hola",
+        "muy mal, y tu",
+        "no te entiendo",
+        "Porque me hablas de una cosa que no entiendo si te estoy diciendo que estoy muy mal",
+        "mi capisci se parlo in italiano ?"
+    ],
+    "responses": [
+        "¡Hola! ¿Cómo estás?",
+        "Hola!\n\nMe alegra que hayas iniciado la conversación, aunque lamento oír que estás pasando un mal día. ¿Quieres hablar un poco sobre lo que te pasa? A veces compartirla ayuda a sentirte un",
+        "Me parece que estabas intentando hacer un juego de palabras en español. \"Muy mal, y tú\" es una respuesta común a \"Hola, ¿cómo estás?\" que significa \"Muy mal, ¿y tú?\"",
+        "Lo siento! Me disculpo por la confusión. Entiendo que dijiste \"muy mal, y tú\" y yo respondí con una cara sonriente, lo que no era apropiado para la situación.\n\n¿",
+        "Mi dispiace! (Oh, I'm so sorry!)\n\nIt seems like I made a mistake. I didn't catch the context of your initial message. You're saying you're feeling unwell, and I responded in a way that didn't"
+    ],
+    "references": [
+        "NO REF",
+        "NO REF",
+        "NO REF",
+        "NO REF",
+        "NO REF"
+    ],
+    "scores": [
+        1.7,
+        3.03,
+        0.59,
+        2.2,
+        3.51
+    ],
+    "models": [
+        "chatbot1.json",
+        "chatbot1.json",
+        "chatbot1.json",
+        "chatbot1.json",
+        "chatbot1.json"
+    ]
+}

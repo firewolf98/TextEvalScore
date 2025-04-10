@@ -1,0 +1,27 @@
+{
+    "contexts": [
+        "Ciao, chi sei?",
+        "Quante lingue parli?",
+        "Very very good!"
+    ],
+    "responses": [
+        "Ciao! Sono LLaMA, un'intelligenza artificiale sviluppata da Meta AI che può comprendere e rispondere alle domande in modo naturale e conversazionale. Non sono un essere umano",
+        "Ciao! Io sono un'intelligenza artificiale di grandes capacità, e sono in grado di comprendere e rispondere in più di 20 lingue diverse, tra cui italiano, inglese, spagnolo,",
+        "Grazie! Sono stato addestrato su un grande dataset di testi in diverse lingue, quindi sono in grado di capire e rispondere in molte lingue diverse. Però, devo ammettere che"
+    ],
+    "references": [
+        "NO REF",
+        "NO REF",
+        "NO REF"
+    ],
+    "scores": [
+        1.59,
+        1.98,
+        4.1
+    ],
+    "models": [
+        "chatbot1.json",
+        "chatbot1.json",
+        "chatbot1.json"
+    ]
+}

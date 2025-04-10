@@ -1,0 +1,35 @@
+{
+    "performance_results": {
+        "Spearman": -0.09999999999999999,
+        "Pearson": -0.23260186504140176,
+        "Kendall-Tau": 0.0,
+        "Cohen's Kappa": 0.0
+    },
+    "results": [
+        {
+            "id": 0,
+            "human_score": 1.7,
+            "gpt_score": -1.3570994524953304
+        },
+        {
+            "id": 1,
+            "human_score": 3.03,
+            "gpt_score": -0.572298297147711
+        },
+        {
+            "id": 2,
+            "human_score": 0.59,
+            "gpt_score": -0.4589333657874877
+        },
+        {
+            "id": 3,
+            "human_score": 2.2,
+            "gpt_score": -1.2117849781829404
+        },
+        {
+            "id": 4,
+            "human_score": 3.51,
+            "gpt_score": -1.0634482347542704
+        }
+    ]
+}
