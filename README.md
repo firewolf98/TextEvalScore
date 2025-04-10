@@ -76,7 +76,7 @@ if you want to start it with a graphical interface.
 ## 📜 Authors
 
 The authors of this project are:
-- Luca Esposito (https://github.com/firewolf98) (https://www.linkedin.com/in/lucaesposito98/)
-- Onelia Sara Cataldo (https://github.com/cataldosara98) (https://www.linkedin.com/in/onelia-sara-cataldo-6257861b0/)
+- Luca Esposito | [GitHub](https://github.com/firewolf98) | [LinkedIn](https://www.linkedin.com/in/lucaesposito98/)
+- Onelia Sara Cataldo | [GitHub](https://github.com/cataldosara98) | [LinkedIn](https://www.linkedin.com/in/onelia-sara-cataldo-6257861b0/)
 
 Both are students of Data Science & Machine Learning at the University of Salerno.
